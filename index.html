@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="side-menu">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-cloud"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+                Weather App
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#dashboard" class="active" data-page="dashboard">Dashboard</a></li>
+                    <li><a href="#tables" data-page="tables">Tables</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <div class="top-bar">
+                <input type="text" id="city-input" placeholder="Search for a city..." class="search-bar">
+                <div class="user-profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+            </div>
+            <div id="dashboard-page" class="page active">
+                <section class="weather-widget">
+                    <h2>Current Weather</h2>
+                    <button id="unit-toggle" class="unit-toggle">Switch to °F</button>
+                    <div id="current-weather" class="current-weather"></div>
+                </section>
+                <section class="charts-container">
+                    <div class="chart">
+                        <h3>5-Day Temperature Forecast</h3>
+                        <canvas id="temperature-chart"></canvas>
+                    </div>
+                    <div class="chart">
+                        <h3>Weather Conditions</h3>
+                        <canvas id="conditions-chart"></canvas>
+                    </div>
+                    <div class="chart">
+                        <h3>Temperature Changes</h3>
+                        <canvas id="temperature-line-chart"></canvas>
+                    </div>
+                </section>
+            </div>
+            <div id="tables-page" class="page">
+                <div class="table-container">
+                    <h2>5-Day Temperature Forecast</h2>
+                    <table id="forecast-table"></table>
+                    <div id="pagination" class="pagination"></div>
+                </div>
+                <div class="chatbot-widget">
+                    <h2>Weather Assistant</h2>
+                    <div id="chatbot-container" class="chatbot-container">
+                        <div id="chat-messages" class="chat-messages"></div>
+                        <form id="chat-form" class="chat-form">
+                            <input type="text" id="chat-input" placeholder="Ask about the weather..." required>
+                            <button type="submit" class="rounded-button">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div id="loading-indicator" class="loading-indicator">
+        <div class="loader"></div>
+    </div>
+    <button id="dark-mode-toggle" class="dark-mode-toggle">🌓</button>
+    <script src="app.js"></script>
+</body>
+</html>
