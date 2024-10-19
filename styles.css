@@ -298,6 +298,11 @@ th {
     animation: spin 1s linear infinite;
 }
 
+.dark-mode .loader {
+    border-color: #2c3e50;
+    border-top-color: #3498db;
+}
+
 .rounded-button {
     background-color: #2980B9;
     color: white;
@@ -331,6 +336,31 @@ th {
 .dark-mode .dark-mode-toggle {
     background-color: #f39c12;
 }
+
+/* Geolocation button styles */
+.geolocation-button {
+    background-color: #2980B9;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 10px;
+}
+
+.geolocation-button:hover {
+    background-color: #2471A3;
+}
+
+.dark-mode .geolocation-button {
+    background-color: #34495e;
+}
+
+.dark-mode .geolocation-button:hover {
+    background-color: #2c3e50;
+}
+
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
