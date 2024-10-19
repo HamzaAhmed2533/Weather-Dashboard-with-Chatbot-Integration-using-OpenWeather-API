@@ -2,7 +2,6 @@ const API_KEY = 'bf90f43798142d842f321dec3c5ef4ee';
 const WEATHER_API_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 const GEMINI_API_KEY = 'AIzaSyCJoBQgh9VhwuCNjKwmFLvnxe2VkTYQAVk';
 
-// Grab all the DOM elements we need (like catching Pokémon, gotta catch 'em all!)
 const currentWeatherEl = document.getElementById('current-weather');
 const forecastTableEl = document.getElementById('forecast-table');
 const paginationEl = document.getElementById('pagination');
@@ -13,18 +12,16 @@ const chatFormEl = document.getElementById('chat-form');
 const chatInputEl = document.getElementById('chat-input');
 const loadingIndicatorEl = document.getElementById('loading-indicator');
 const darkModeToggleEl = document.getElementById('dark-mode-toggle');
+const geolocationButtonEl = document.getElementById('geolocation-button');
 
-// Global variables (the weather app's secret sauce)
 let forecastData = [];
 let currentUnit = 'metric';
 let currentCity = '';
 let currentPage = 1;
 const itemsPerPage = 10;
 
-// Chart instances (our artistic masterpieces)
 let temperatureChart, conditionsChart, temperatureLineChart;
 
-// The weather whisperer - fetches weather data from the API
 async function getWeatherData(city) {
     try {
         const currentWeatherResponse = await fetch(`${WEATHER_API_BASE_URL}/weather?q=${city}&appid=${API_KEY}&units=${currentUnit}`);
@@ -44,7 +41,25 @@ async function getWeatherData(city) {
     }
 }
 
-// The weather artist - paints the current weather on the screen
+async function getWeatherDataByCoords(lat, lon) {
+    try {
+        const currentWeatherResponse = await fetch(`${WEATHER_API_BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${currentUnit}`);
+        const forecastResponse = await fetch(`${WEATHER_API_BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${currentUnit}`);
+
+        if (!currentWeatherResponse.ok || !forecastResponse.ok) {
+            throw new Error('Unable to fetch weather data');
+        }
+
+        const currentWeatherData = await currentWeatherResponse.json();
+        const forecastData = await forecastResponse.json();
+
+        return { currentWeatherData, forecastData };
+    } catch (error) {
+        console.error('Error fetching weather data:', error);
+        throw error;
+    }
+}
+
 function displayCurrentWeather(data) {
     const { name, main, weather, wind } = data;
     const tempUnit = currentUnit === 'metric' ? '°C' : '°F';
@@ -60,13 +75,11 @@ function displayCurrentWeather(data) {
     `;
 }
 
-// The fortune teller - displays the forecast for the coming days
 function displayForecast(data) {
     forecastData = data.list;
     displayForecastPage(1);
 }
 
-// The page turner - shows different pages of the forecast
 function displayForecastPage(page) {
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -103,12 +116,10 @@ function displayForecastPage(page) {
     currentPage = page;
 }
 
-// The page flipper - changes the forecast page
 function changePage(page) {
     displayForecastPage(page);
 }
 
-// The temperature artist - creates a beautiful bar chart of temperatures
 function createTemperatureChart(data) {
     const ctx = document.getElementById('temperature-chart').getContext('2d');
     if (temperatureChart) {
@@ -143,7 +154,6 @@ function createTemperatureChart(data) {
     });
 }
 
-// The weather condition pie maker - creates a delicious pie chart of weather conditions
 function createWeatherConditionsChart(data) {
     const ctx = document.getElementById('conditions-chart').getContext('2d');
     if (conditionsChart) {
@@ -187,7 +197,6 @@ function createWeatherConditionsChart(data) {
     });
 }
 
-// The temperature roller coaster - creates a thrilling line chart of temperature changes
 function createTemperatureLineChart(data) {
     const ctx = document.getElementById('temperature-line-chart').getContext('2d');
     if (temperatureLineChart) {
@@ -222,7 +231,6 @@ function createTemperatureLineChart(data) {
     });
 }
 
-// The weather magician - updates the entire dashboard with new weather data
 async function updateWeatherDashboard(city) {
     try {
         loadingIndicatorEl.style.display = 'flex';
@@ -240,14 +248,40 @@ async function updateWeatherDashboard(city) {
     }
 }
 
-// The unit juggler - toggles between Celsius and Fahrenheit
+function handleGeolocation() {
+    if ("geolocation" in navigator) {
+        loadingIndicatorEl.style.display = 'flex';
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            try {
+                const { latitude, longitude } = position.coords;
+                const { currentWeatherData, forecastData } = await getWeatherDataByCoords(latitude, longitude);
+                currentCity = currentWeatherData.name;
+                displayCurrentWeather(currentWeatherData);
+                displayForecast(forecastData);
+                createTemperatureChart(forecastData.list.filter((item, index) => index % 8 === 0));
+                createWeatherConditionsChart(forecastData.list.filter((item, index) => index % 8 === 0));
+                createTemperatureLineChart(forecastData.list.filter((item, index) => index % 8 === 0));
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                loadingIndicatorEl.style.display = 'none';
+            }
+        }, (error) => {
+            alert('Error: ' + error.message);
+            loadingIndicatorEl.style.display = 'none';
+        });
+    } else {
+        alert("Geolocation is not supported by your browser");
+    }
+}
+
+
 function toggleUnit() {
     currentUnit = currentUnit === 'metric' ? 'imperial' : 'metric';
     unitToggleEl.textContent = currentUnit === 'metric' ? 'Switch to °F' : 'Switch to °C';
     updateWeatherDashboard(currentCity);
 }
 
-// The chat historian - adds messages to the chat log
 function addChatMessage(message, isUser = false) {
     const messageEl = document.createElement('div');
     messageEl.classList.add('chat-message', isUser ? 'user-message' : 'bot-message');
@@ -256,13 +290,11 @@ function addChatMessage(message, isUser = false) {
     chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
 }
 
-// The weather detective - determines if a query is weather-related
 function isWeatherRelatedQuery(query) {
     const weatherKeywords = ['weather', 'temperature', 'humidity', 'wind', 'forecast', 'rain', 'snow', 'sunny', 'cloudy', 'storm', 'highest', 'lowest', 'average'];
     return weatherKeywords.some(keyword => query.toLowerCase().includes(keyword));
 }
 
-// The weather oracle - provides responses to weather-related queries
 async function getWeatherChatResponse(message) {
     if (!currentCity) {
         return "I'm sorry, but I don't have any weather information at the moment. Please search for a city first.";
@@ -300,7 +332,6 @@ async function getWeatherChatResponse(message) {
     }
 }
 
-// The AI whisperer - gets responses from the Gemini API for non-weather queries
 async function getGeminiResponse(message) {
     const weatherAssistantContext = `You are a weather assistant chatbot integrated into a weather dashboard application. Your primary function is to answer weather-related queries, but you can also engage in general conversation. When asked about your identity or capabilities, explain that you are a weather assistant chatbot that can provide weather information and answer general questions. If asked about non-weather topics, politely inform the user that while you can discuss various topics, your main purpose is to assist with weather-related information. Always maintain a helpful and friendly tone. The current city for weather information is ${currentCity}.`;
 
@@ -331,7 +362,6 @@ async function getGeminiResponse(message) {
     }
 }
 
-// The chat maestro - handles chat form submissions
 async function handleChatSubmit(e) {
     e.preventDefault();
     const userInput = chatInputEl.value.trim();
@@ -350,7 +380,6 @@ async function handleChatSubmit(e) {
     }
 }
 
-// The page switcher - changes between dashboard and tables views
 function switchPage(pageName) {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById(`${pageName}-page`).classList.add('active');
@@ -358,13 +387,11 @@ function switchPage(pageName) {
     document.querySelector(`nav a[data-page="${pageName}"]`).classList.add('active');
 }
 
-// The dark side beckons - toggles dark mode
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     darkModeToggleEl.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌓';
 }
 
-// Event listeners (where the magic happens)
 cityInputEl.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
@@ -375,6 +402,7 @@ cityInputEl.addEventListener('keypress', (e) => {
 unitToggleEl.addEventListener('click', toggleUnit);
 chatFormEl.addEventListener('submit', handleChatSubmit);
 darkModeToggleEl.addEventListener('click', toggleDarkMode);
+geolocationButtonEl.addEventListener('click', handleGeolocation);
 
 document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', (e) => {
@@ -383,6 +411,9 @@ document.querySelectorAll('nav a').forEach(link => {
     });
 });
 
-// Initialize the dashboard with a default city (let the weather show begin!)
-updateWeatherDashboard('Pakistan');
+if ("geolocation" in navigator) {
+    handleGeolocation();
+} else {
+    updateWeatherDashboard('Pakistan');
+}
 switchPage('dashboard');
